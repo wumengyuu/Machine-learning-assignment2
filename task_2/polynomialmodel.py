@@ -50,7 +50,7 @@ def validate_poly_regression(X_train, y_train, X_val, y_val,
       #               xlabel="Degree", ylabel="RMSE")
     return best_model, best_error
 
-df = pd.read_csv("train_data.csv")
+df = pd.read_csv("../data/train_data.csv")
 X_train, y_train, X_val, X_test, y_val, y_test = dataprepare(df)
 top_model, top_error = validate_poly_regression(X_train, y_train, X_val, y_val, regressor=None)
 print(f'\nBest model: {top_model}\nBest error: {top_error}')
