@@ -5,7 +5,7 @@ from Datapreparation import dataprepare
 from knnmodel import validate_knn_regression
 from polynomialmodel import validate_poly_regression
 
-df = pd.read_csv("../data/train_data.csv")
+df = pd.read_csv("train_data.csv")
 X_train, y_train, X_val, X_test, y_val, y_test = dataprepare(df)
 
 X_train = X_train.drop(columns=['Censored'])
@@ -13,7 +13,7 @@ X_val = X_val.drop(columns=['Censored'])
 #model, error = validate_poly_regression(X_train, y_train, X_val, y_val, degrees=range(3, 4))
 model, error = validate_knn_regression(X_train, y_train, X_val, y_val, k=range(7, 8))
 
-dftest = pd.read_csv("../data/test_data.csv")
+dftest = pd.read_csv("test_data.csv")
 dftest = pd.DataFrame(dftest)
 dftest = dftest.drop(columns=['GeneticRisk','ComorbidityIndex', 'TreatmentResponse'])
 X_dftest_test = dftest[['Age', 'Gender', 'Stage', 'TreatmentType']]

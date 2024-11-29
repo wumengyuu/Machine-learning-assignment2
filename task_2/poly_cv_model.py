@@ -7,7 +7,7 @@ from sklearn.model_selection import KFold
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 
-from plot_y_yhat import plot_error
+from plot_y_yhat import plot_error, plot_all_error_stats
 
 
 def error_metric(y, y_hat, c):
@@ -29,17 +29,17 @@ def get_Xy(df_clean):
     return X, y
 
 
-def validate_poly_regression(X, y, k=5, regressor=None, degrees=range(1, 15),
+def validate_poly_regression(X, y, k=10, regressor=None, degree=1,
                              max_features=None):
-    all_errors: dict = {}
+    all_errors = [] #dict = {}
     best_model = None
     best_error = np.inf
     if regressor is None:
         alphas = [0.1, 1, 10, 100]
         regressor = RidgeCV(alphas=alphas)
         #regressor = LinearRegression()
-    for deg in degrees:
-        polyreg = make_pipeline(PolynomialFeatures(deg),
+    for k_val in range(2, k):
+        polyreg = make_pipeline(PolynomialFeatures(degree),
                                 StandardScaler(),
                                 regressor)
         #print(f"{polyreg}\n{best_model}")
@@ -65,7 +65,8 @@ def validate_poly_regression(X, y, k=5, regressor=None, degrees=range(1, 15),
         if avg_cmse > 100:
             break
 
-        all_errors[deg] = avg_cmse
+        #all_errors[k_val] = avg_cmse
+        all_errors.append(avg_cmse)
 
         #print(f'Degree {deg}: Avg cMSE = {avg_cmse:.4f}')
 
@@ -73,9 +74,9 @@ def validate_poly_regression(X, y, k=5, regressor=None, degrees=range(1, 15),
             best_error = avg_cmse
             best_model = polyreg
 
-    plot_error(all_errors, plot_title="Polynomial Regression with KFold Cross Validation for k="+str(k),
-                     xlabel="Degree", ylabel="cMSE")
-    return best_model, best_error
+    #plot_error(all_errors, plot_title="Polynomial Regression with KFold Cross Validation for k="+str(k),
+     #                xlabel="Degree", ylabel="cMSE")
+    return best_model, best_error, all_errors
 
 
 def get_best_poly_model_with_cv():
@@ -85,19 +86,21 @@ def get_best_poly_model_with_cv():
     X, y = get_Xy(df_clean)
     top_model = None
     top_error = np.inf
-    top_k = None
-    for k in range(2, 10):
-        model, error = validate_poly_regression(X, y, k, regressor=None)
+    top_degree = None
+    complete_error = {}
+    for deg in range(1, 15):
+        model, error, all_errors = validate_poly_regression(X, y, degree=deg, regressor=None)
+        complete_error[deg] = all_errors
         #print(f'For K={k}  Best error: {error}')
         if error < top_error:
             top_error = error
             top_model = model
-            top_k = k
+            top_degree = deg
 
-    best_degree = top_model.named_steps['polynomialfeatures'].degree
-    res, err = validate_poly_regression(X, y, top_k, regressor=None, degrees=range(best_degree, best_degree+1))
-    print(f'\n\nBest model: {top_model}\nBest error: {err}\nBest K: {top_k}')
-    return res
+    print(f'\n\nBest model: {top_model}\nBest error: {top_error}\nBest degree: {top_degree}')
+    #plot_all_error_stats(complete_error, plot_title="Polynomial Regression with KFold Cross Validation",
+     #                    xlabel="Degree", ylabel="cMSE")
+    return top_model
     #print("get best model: ", top_model.n_features_in_)
     #return top_model
 
@@ -120,7 +123,7 @@ def get_submission():
     y_pred_df['id'] = y_pred_df['id'].astype(np.int32)
     #print(y_pred_df[:3])
 
-    y_pred_df.to_csv("submissions/Nonlinear-submission-06.csv", index=False)
+    y_pred_df.to_csv("submissions/Nonlinear-submission-11.csv", index=False)
 
 
 get_submission()

@@ -9,7 +9,7 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 
-from plot_y_yhat import plot_error
+from plot_y_yhat import plot_error, plot_all_error_stats
 
 
 def error_metric(y, y_hat, c):
@@ -30,13 +30,13 @@ def get_Xy(df_clean):
     y = df_clean[['SurvivalTime']]
     return X, y
 
-def validate_knn_regression(X, y, kcv, k=range(1, 20)):
-    all_errors: dict = {}
+def validate_knn_regression(X, y, kcv=8, k=7):
+    all_errors: list = []
     best_model = None
     best_error = np.inf
-    for k_val in k:
-        knn = KNeighborsRegressor(n_neighbors=k_val)
-        kf = KFold(n_splits=kcv, shuffle=True)
+    for kcv_val in range(2, kcv):
+        knn = KNeighborsRegressor(n_neighbors=k)
+        kf = KFold(n_splits=kcv_val, shuffle=True)
         cmse_list = []
 
         for train_index, test_index in kf.split(X, y):
@@ -54,15 +54,15 @@ def validate_knn_regression(X, y, kcv, k=range(1, 20)):
             cmse_list.append(cMSE_test)
 
         avg_cmse = np.mean(cmse_list)
-        all_errors[k_val] = avg_cmse
+        all_errors.append(avg_cmse)
 
         if avg_cmse < best_error:
             best_error = avg_cmse
             best_model = knn
 
-    plot_error(all_errors, plot_title="Validation RMSE vs. k",
-               xlabel="k", ylabel="RMSE")
-    return best_model, best_error
+    #plot_error(all_errors, plot_title="Validation RMSE vs. k",
+     #          xlabel="k", ylabel="RMSE")
+    return best_model, best_error, all_errors
 
 def get_best_knn_model_with_cv():
     df = pd.read_csv("../data/train_data.csv")
@@ -72,18 +72,21 @@ def get_best_knn_model_with_cv():
     top_model = None
     top_error = np.inf
     top_k = None
-    for k in range(2, 8):
-        model, error = validate_knn_regression(X, y, kcv=k)
+
+    complete_error = {}
+    for k in range(1, 20):
+        model, error, all_errors = validate_knn_regression(X, y, k=k)
+        complete_error[k] = all_errors
         #print(f'For K={k}  Best error: {error}')
         if error < top_error:
             top_error = error
             top_model = model
             top_k = k
 
-    best_k = top_model.n_neighbors
-    res, err = validate_knn_regression(X, y, top_k, k=range(best_k, best_k+1))
-    print(f'\n\nBest model: {top_model}\nBest error: {err}\nBest K: {top_k}')
-    return res
+    print(f'\n\nBest model: {top_model}\nBest error: {top_error}\nBest k: {top_k}')
+    plot_all_error_stats(complete_error, plot_title="KNearestNeighbors with KFold Cross Validation",
+                         xlabel="Number of neighbors", ylabel="cMSE")
+    return top_model
 
 
 def get_submission():
@@ -105,7 +108,7 @@ def get_submission():
     y_pred_df['id'] = y_pred_df['id'].astype(np.int32)
     #print(y_pred_df[:3])
 
-    y_pred_df.to_csv("submissions/Nonlinear-submission-07.csv", index=False)
+    y_pred_df.to_csv("submissions/Nonlinear-submission-11.csv", index=False)
 
 
 get_submission()

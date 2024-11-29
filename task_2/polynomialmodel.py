@@ -18,7 +18,7 @@ def validate_poly_regression(X_train, y_train, X_val, y_val,
     best_model = None
     best_error = np.inf
     if regressor is None:
-        alphas = [0.0001, 0.001, 0.01, 0.1]
+        alphas = [0.01, 0.1, 1, 10]
         regressor = RidgeCV(alphas=alphas)
     for deg in degrees:
         polyreg = make_pipeline(PolynomialFeatures(deg),
@@ -50,7 +50,9 @@ def validate_poly_regression(X_train, y_train, X_val, y_val,
       #               xlabel="Degree", ylabel="RMSE")
     return best_model, best_error
 
+
 df = pd.read_csv("../data/train_data.csv")
 X_train, y_train, X_val, X_test, y_val, y_test = dataprepare(df)
 top_model, top_error = validate_poly_regression(X_train, y_train, X_val, y_val, regressor=None)
+print(top_model.named_steps['ridgecv'].alpha_)
 print(f'\nBest model: {top_model}\nBest error: {top_error}')
