@@ -7,13 +7,18 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 
 from Datapreparation import dataprepare
+from error_metric import error_metric
 from plot_y_yhat import plot_y_yhat, plot_error
 
 
 def validate_poly_regression(X_train, y_train, X_val, y_val,
-                             regressor=None, degrees=range(1, 15),
+                             regressor=None, degrees=range(1, 50),
                              max_features=None):
     print(f'Validating polynomial regression with degrees: {degrees}')
+    c_train = X_train[['Censored']].values
+    X_train = X_train.drop(columns=['Censored'])
+    c_val = X_val[['Censored']].values
+    X_val = X_val.drop(columns=['Censored'])
     all_errors: dict = {}
     best_model = None
     best_error = np.inf
@@ -26,33 +31,26 @@ def validate_poly_regression(X_train, y_train, X_val, y_val,
                                 regressor)
         polyreg.fit(X_train, y_train)
 
-        # predict on training and validation dataset
         y_pred_val = polyreg.predict(X_val)
-        y_pred_train = polyreg.predict(X_train)
-        # plot_y_yhat(y_val, y_pred_val)
 
-        # compare RMSE
-        rmse_val = math.sqrt(np.square(np.subtract(y_val, y_pred_val)).mean().iloc[0])
-        rmse_train = math.sqrt(np.square(np.subtract(y_train, y_pred_train)).mean().iloc[0])
+        # compare cMSE
+        cmse = error_metric(y_val, y_pred_val, c_val)[0]
 
-        # Print the number of polynomial features and RMSE for both train and validation
-        # print(f'Degree {deg}: Created {polyreg.named_steps["polynomialfeatures"].n_output_features_} features.')
-        # print(f'Degree {deg}: Train RMSE = {rmse_train:.4f}, Validation RMSE = {rmse_val:.4f}')
 
-        all_errors[deg] = rmse_val
+        all_errors[deg] = cmse
 
         # Check if this is the best model so far (based on validation RMSE)
-        if rmse_val < best_error:
-            best_error = rmse_val
+        if cmse < best_error:
+            best_error = cmse
             best_model = polyreg
 
-    # plot_error(all_errors, plot_title="Validation RMSE vs. Degree",
-      #               xlabel="Degree", ylabel="RMSE")
+    plot_error(all_errors, plot_title="Validation cMSE vs. Degree",
+                     xlabel="Degree", ylabel="cMSE")
     return best_model, best_error
 
 
-df = pd.read_csv("../data/train_data.csv")
-X_train, y_train, X_val, X_test, y_val, y_test = dataprepare(df)
-top_model, top_error = validate_poly_regression(X_train, y_train, X_val, y_val, regressor=None)
-print(top_model.named_steps['ridgecv'].alpha_)
-print(f'\nBest model: {top_model}\nBest error: {top_error}')
+# df = pd.read_csv("../data/train_data.csv")
+# X_train, y_train, X_val, X_test, y_val, y_test = dataprepare(df)
+# top_model, top_error = validate_poly_regression(X_train, y_train, X_val, y_val, regressor=None)
+# print(top_model.named_steps['ridgecv'].alpha_)
+# print(f'\nBest model: {top_model}\nBest error: {top_error}')

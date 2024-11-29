@@ -6,15 +6,11 @@ from sklearn.manifold import Isomap
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
+from error_metric import error_metric
 from plot_y_yhat import plot_y_yhat, plot_error
 from task_3.task3_1 import ImputeData
 from task_4.semi_datapreparation import semi_dataprepare
 from task_4.frozen_transformer import FrozenTransformer
-
-def error_metric(y, y_hat, c):
-    err = y-y_hat
-    err = (1-c)*err**2 + c*np.maximum(0,err)**2
-    return np.sum(err)/err.shape[0]
 
 # Impute missing values with the best imputers from Task 3.1
 imp = SimpleImputer()

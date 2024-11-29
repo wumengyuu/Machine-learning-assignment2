@@ -7,13 +7,8 @@ from sklearn.model_selection import KFold
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 
+from error_metric import error_metric
 from plot_y_yhat import plot_error, plot_all_error_stats
-
-
-def error_metric(y, y_hat, c):
-    err = y-y_hat
-    err = (1-c)*err**2 + c*np.maximum(0,err)**2
-    return np.sum(err)/err.shape[0]
 
 
 def data_cleaning(data):
