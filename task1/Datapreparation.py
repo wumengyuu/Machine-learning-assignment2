@@ -3,34 +3,39 @@ import pandas as pd
 import missingno as msno
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
+import seaborn as sns
 
 def dataprepare(df):
-
     df = pd.DataFrame(df)
-    # print(df.head)
-
-    ## Plot missing values 
-    # msno.bar(df)
-    # msno.heatmap(df)
-    # msno.matrix(df) 
-    # msno.dendrogram(df)
-    # plt.show()
-
     # Drop missing columns
-    df_clean = df.dropna(subset=['SurvivalTime']) # drop row if SurvivalTime is missing
-    df_clean = df_clean.dropna(axis=1, how='any') # drop missing columns
+    df = df.drop(df.columns[0], axis=1)     # drop first column
+    df = df.dropna(subset=['SurvivalTime']) # drop row if SurvivalTime is missing
+    df_clean = df.dropna(axis=1, how='any') # drop missing columns
+    return df_clean
 
-    # creat X, y
-    X = df_clean[['Age', 'Gender', 'Stage', 'TreatmentType', 'Censored']]
-    y = df_clean[['SurvivalTime']]
+def missingno_plot(df):
+    # Plot missing values 
+    msno.bar(df)
+    msno.matrix(df) 
+    msno.dendrogram(df)
+    plt.show()
 
-    # split the data
-    X_train, X_valtest, y_train, y_valtest = train_test_split(X, y, test_size=0.2, random_state=42)
-    X_val, X_test, y_val, y_test = train_test_split(X_valtest, y_valtest, test_size=0.5, random_state=42)
-    
-    return X_train, y_train, X_val, X_test, y_val, y_test
+def get_Xyc(df):
+    # Get X, y, c
+    X = df[['Age', 'Gender', 'Stage', 'TreatmentType']]
+    y = df[['SurvivalTime']]
+    c = df[['Censored']]
+    return X, y, c
 
-## Dataframes
+## Raw data
 df = pd.read_csv("train_data.csv")
-X_train, y_train, X_val, X_test, y_val, y_test = dataprepare(df)
-# print(X_train.shape, X_val.shape)
+missingno_plot(df)
+
+## Cleaned data
+df_clean= dataprepare(df)
+missingno_plot(df_clean)
+
+## Get X, y, c
+X, y, c = get_Xyc(df)
+print(X.shape, y.shape, c.shape)
+
