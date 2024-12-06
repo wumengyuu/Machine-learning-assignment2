@@ -4,7 +4,7 @@ from sklearn.model_selection import KFold
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
-from plot_y_yhat import plot_y_yhat
+import matplotlib.pyplot as plt
 
 def dataprepare(df):
     df = pd.DataFrame(df)
@@ -39,6 +39,7 @@ def linearmodel(X_train, y_train, X_test, y_test, c):
 def Kfold_CV(K, X, y, c):
     kf =KFold(n_splits=K, shuffle=True, random_state=42)
     cnt = 1
+    cmse_list = []
     for train_index, test_index in kf.split(X, y, c):
         X_train, X_test = X.iloc[train_index], X.iloc[test_index]
         y_train, y_test = y.iloc[train_index], y.iloc[test_index]
@@ -47,7 +48,8 @@ def Kfold_CV(K, X, y, c):
         cMSE_test = linearmodel(X_train, y_train, X_test, y_test, c_test)
         print(f'cMSE: {cMSE_test}')
         cnt += 1
-    return
+        cmse_list.append(cMSE_test)
+    return cmse_list
 
 data = pd.read_csv("train_data.csv")
 df_clean = dataprepare(data)
@@ -55,4 +57,8 @@ X, y, c = get_Xyc(df_clean)
 
 # K-fold cross validation
 K = 5
-Kfold_CV(K, X, y, c)
+cmse_list = Kfold_CV(K, X, y, c)
+plt.plot(range(1, K+1), cmse_list, '-o')
+plt.xlabel('Fold')
+plt.ylabel('CMSE')
+plt.show()
