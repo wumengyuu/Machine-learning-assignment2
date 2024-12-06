@@ -59,6 +59,7 @@ X, y, c = get_Xyc(df_clean)
 K = 5
 cmse_list = Kfold_CV(K, X, y, c)
 plt.plot(range(1, K+1), cmse_list, '-o')
+plt.title('K-fold Cross Validation')
 plt.xlabel('Fold')
 plt.ylabel('CMSE')
 plt.show()
