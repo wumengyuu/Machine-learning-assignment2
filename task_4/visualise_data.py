@@ -6,11 +6,11 @@ from sklearn.impute import SimpleImputer
 from sklearn.decomposition import PCA
 
 
-def plot_data_imputation(df_raw, df_imputed, column1, column2):
+def plot_data_imputation(df_raw, df_imputed, column1, column2, column3):
     # Apply PCA for visualization
-    pca = PCA(n_components=2)
-    df_raw_pca = pd.DataFrame(pca.fit_transform(df_raw.fillna(0)), columns=[column1, column2])
-    df_imputed_pca = pd.DataFrame(pca.transform(df_imputed), columns=[column1, column2])
+    pca = PCA(n_components=3)
+    df_raw_pca = pd.DataFrame(pca.fit_transform(df_raw.fillna(0)), columns=[column1, column2, column3])
+    df_imputed_pca = pd.DataFrame(pca.transform(df_imputed), columns=[column1, column2, column3])
 
     # Visualization
     plt.figure(figsize=(12, 6))
