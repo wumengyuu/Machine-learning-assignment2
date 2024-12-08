@@ -2,8 +2,9 @@ import numpy as np
 import pandas as pd
 
 from Datapreparation import dataprepare
-from polynomialmodel import validate_poly_regression
-from task_2.knn_submission import validate_knn_regression
+from task_2.knnmodel_alpha import validate_knn_regression
+
+from task_2.polynomialmodel_alpha import validate_poly_regression
 
 df = pd.read_csv("../data/train_data.csv")
 X_train, y_train, X_val, X_test, y_val, y_test = dataprepare(df)

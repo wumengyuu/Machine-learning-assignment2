@@ -96,8 +96,7 @@ def get_best_poly_model_with_cv():
     #plot_all_error_stats(complete_error, plot_title="Polynomial Regression with KFold Cross Validation",
      #                    xlabel="Degree", ylabel="cMSE")
     return top_model
-    #print("get best model: ", top_model.n_features_in_)
-    #return top_model
+
 
 
 def get_submission():
@@ -118,7 +117,7 @@ def get_submission():
     y_pred_df['id'] = y_pred_df['id'].astype(np.int32)
     #print(y_pred_df[:3])
 
-    y_pred_df.to_csv("submissions/Nonlinear-submission-11.csv", index=False)
+    #y_pred_df.to_csv("submissions/Nonlinear-submission-11.csv", index=False)
 
 
 get_submission()
